@@ -38,4 +38,4 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/node-docker:latest
 
       - name: Docker digest
-        run: ${{ steps.docker_build.outputs.digest }}
+        run: echo ${{ steps.docker_build.outputs.digest }}
