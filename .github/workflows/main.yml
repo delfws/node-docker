@@ -2,9 +2,9 @@ name: CI to Docker Hub
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
   workflow_dispatch:
 
@@ -15,6 +15,14 @@ jobs:
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v2
+
+      - name: Cache Github layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       - name: Print Env
         run: echo ${{ secrets.DOCKER_HUB_USERNAME }}${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -34,8 +42,11 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/node-docker:latest
+          cache-from: type=local;src=/tmp/.buildx-cache
+          cache-to: type=local;dest=/tmp/.buildx-cache
 
       - name: Docker digest
         run: echo ${{ steps.docker_build.outputs.digest }}
